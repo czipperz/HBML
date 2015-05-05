@@ -1,0 +1,23 @@
+!!html
+%head {
+	%title Basic Website
+}
+#header {
+	#title Basic Website
+
+	#menu {
+		%ul {
+			%li {
+				@"index.html" Home
+			}
+			%li {
+				@"contact.html" Contact
+			}
+		}
+	}
+
+	#content {
+		- #GamerGate blew up on Twitter.
+		Don't get banned kids!
+	}
+}
