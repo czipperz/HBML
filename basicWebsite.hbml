@@ -2,22 +2,24 @@
 %head {
 	%title Basic Website
 }
-#header {
-	#title Basic Website Header
+#content {
+	#header {
+		#title Basic Website Header
 
-	#menu {
-		%ul {
-			%li {
-				@"index.html" Home
-			}
-			%li {
-				@"contact.html" Contact
+		#menu {
+			%ul {
+				%li {
+					@"index.html" Home
+				}
+				%li {
+					@"contact.html" Contact
+				}
 			}
 		}
-	}
 
-	#content {
-		Hi, I'm Czipperz and I am designing a basic website! Tweet at me using the hashtag
-		\- #maddox.
+		#text-body {
+			Hi, I'm Czipperz and I am designing a basic website! Tweet at me using the hashtag
+			\- #maddox.
+		}
 	}
 }
