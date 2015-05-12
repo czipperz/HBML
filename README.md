@@ -77,7 +77,7 @@ The `\-` escapes until the end of the line.
 
 If you don't use a bracket after a tag, it will put the rest of the line in the body.
 
-**THERE MUST NOT BE WHITESPACE AFTER TAGS UNTIL YOU WANT PLAIN TEXT**
+**THERE MUST NOT BE WHITESPACE BETWEEN TAGS UNLESS YOU WANT PLAIN TEXT**
 
 ###Advanced
 
