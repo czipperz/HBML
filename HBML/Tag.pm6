@@ -10,7 +10,7 @@ has @.subs = ();
 
 method startHTML() returns Str {
 	return "<$.name>" if @.properties.elems == 0;
-	return "<$.name {@.properties[].Str}>";
+	"<$.name {@.properties[].Str}>";
 }
 method endHTML() returns Str {
 	"</$.name>";
@@ -25,13 +25,13 @@ multi method put(Property $prop) {
 }
 
 method writeSubs() {
-	say self.startHTML();
+	say self.startHTML;
 	if @.subs.elems > 0 {
 		for @.subs {
 			.writeSubs();
 		}
 	}
-	say self.endHTML();
+	say self.endHTML;
 }
 
 }
