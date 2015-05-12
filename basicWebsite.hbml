@@ -3,7 +3,7 @@
 	%title Basic Website
 }
 #header {
-	#title Basic Website
+	#title Basic Website Header
 
 	#menu {
 		%ul {
@@ -17,7 +17,7 @@
 	}
 
 	#content {
-		- #GamerGate blew up on Twitter.
-		Don't get banned kids!
+		Hi, I'm Czipperz and I am designing a basic website! Tweet at me using the hashtag
+		\- #maddox.
 	}
 }
