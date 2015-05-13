@@ -4,7 +4,7 @@ The language for HTML kings.
 
 It is based off of [*HAML*](http://haml.info/). It does not have support for Ruby integration, as it is supposed to be an independent language that compiles into basic HTML.
 
-The HAML tags must be at the *beginning* of each line.
+The HBML tags must be at the *beginning* of each line. HTML can be anywhere but it must be closed with a corresponding *HTML* tag. You can still embed HBML inside HTML and vice-versa.
 
 HBML allows you to also have HTML Embedded Blocks. You can specify a specific line to not be parsed by prefixing it with `\-` or by putting `###` before and after a block of code to not be parsed.
 
