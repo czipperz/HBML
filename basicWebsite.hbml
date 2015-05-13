@@ -6,15 +6,9 @@
 	#header {
 		#title Basic Website Header
 
-		#menu {
-			%ul {
-				%li {
-					@"index.html" Home
-				}
-				%li {
-					@"contact.html" Contact
-				}
-			}
+		#menu%ul {
+			%li@"index.html" Home
+			%li@"contact.html" Contact
 		}
 
 		#text-body {
