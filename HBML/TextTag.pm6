@@ -12,4 +12,8 @@ method endHTML() returns Str {
 	"";
 }
 
+method writeSubs() {
+	$.text.say;
+}
+
 }
