@@ -21,7 +21,8 @@ for 0..* Z $fileH.lines -> $index, $_ {
 	my $val = $_;
 	#$val ~~ s/^^ \s* (.*?) \s* $$/$0/;
 	$val ~~ s/^^ \s*//;
-	say $val;
+	$val ~~ s/\s* $$//;
+	#say $val;
 	$working = False;
 
 	if $inCom {
@@ -37,10 +38,10 @@ for 0..* Z $fileH.lines -> $index, $_ {
 		$doctype = parseDoctype($0.Str);
 		$hasDoctype = True;
 		$current = Tag.new(name => "html", hasSuper => False);
-	} elsif $val ~~ /^^ $$/ {
-		say "";
+	} elsif ($val ~~ /^^ (.*)/ and $0 eqv "") {
+		say "EMPTY";
 	} else {
-		parseOthers($_);
+		parseOthers($val);
 	}
 }
 
@@ -49,52 +50,57 @@ finWrite();
 sub assign(Tag $new) {
 	$current.put($new);
 	$current = $new;
+	say $current.startHTML;
 }
 
 sub parseDoctype(Str $doctype --> Tag) {
 	DoctypeTag.new(description => $doctype);
 }
 
-sub parseDiv(Property $prop --> Tag) {
-	Tag.new(name => "div", properties => ($prop), super => $current);
+sub parseDiv(Str $name, Str $value --> Tag) {
+	Tag.new(name => "div", properties => (Property.new(name => $name, value => '"' ~ $value ~ '"')), super => $current);
 }
 
 sub parseBlock(Str $blockName --> Tag) {
 	Tag.new(name => $blockName,	super => $current);
 }
 
-multi parseOthers(Str $val) {
+multi parseOthers(Str $val is copy) {
+	say "PARSEOTHERS: $val";
+	if ($val ~~ /^^ (.*)/ and $0 eqv "") {
 	#ESCAPED TEXT
-	if $val ~~ /^^ \- (.*?) $$/ {
-		$current.put(TextTag.new(text => ($val ~~ s/^^ \- (.*?) $$/$0/).Str));
+	} elsif $val ~~ /^^ '\\-' (.*?)/ {
+		$current.put(TextTag.new(text => ($val ~~ s/^^ '\\-'//).Str));
 
 	#BLOCKS
 	} elsif $val ~~ /^^ \@ (\" [ . <-[\"]> | <-[\\]> .] + \" )/ {
-		assign Block.new(name => "a", properties => (Property.new(name => "href", value => $0)));
-	} elsif $val ~~ /^^ \% (<[\  \% \# \. \@ \& \< \[ ]>)/ {
+		assign Block.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)));
+	} elsif $val ~~ /^^ \% (<[\  \% \# \. \@ \& \< \[ ]> .*?)/ {
 		assign Block.new(name => "div", super => $current);
 		parseOthers($val ~~ s/^^ \%//);
-	} elsif $val ~~ /^^ \% (<-[\ ]> +) (.*?) $$/ {
+	} elsif $val ~~ /^^ \% (<-[\  \% \# \. \@ \& \< \[ ]> +) (.*?)/ {
 		assign parseBlock($0.Str);
 		parseOthers($current, $1.Str);
 
 	#DIVS
-	} elsif $val ~~ /^^ (<[#.]>) [ (<-[\ ]> +)    |
+	} elsif $val ~~ /^^ (<[#.]>) [ (<-[\  \% \# \. \@ \& \< \[ ]> +)    |
 									 \" ([ . <-[\"]> | <-[\\]> . ] +) \"
-								 ] (.*?) $$/ {
-		assign parseDiv(Property.new(name => ($0.Str eqv '#' ?? "id" !! "class"), value => $1.Str));
+								 ] (.*?)/ {
+		assign parseDiv($0.Str eqv '#' ?? "id" !! "class", $1.Str);
 		parseOthers($current, $2.Str);
 
 	#END OF BLOCK
 	} elsif $val ~~ /^^ '}'/ {
 		say "Oh baby";
 		$current .= super;
+	} else {
+		$current.put(TextTag.new(text => $val));
 	}
 }
 
 #Recursively finds properties in the `Str $toParse` and adds them to `$toEdit`.
 multi parseOthers(Tag $toEdit, Str $toParse) {
-	if $toParse ~~ /^^ $$/ {
+	if ($toParse ~~ /^^ (.*?)/ and $0 eqv "") {
 	} elsif $toParse ~~ /^^ ' ' (.*)/ {
 		$toEdit.put(TextTag.new(text => $0.Str));
 	} elsif $toParse ~~ /^^ \(\)/ {
@@ -116,15 +122,13 @@ multi parseOthers(Tag $toEdit, Str $toParse) {
 														<-[\  \% \# \. \@ \& \< \[ ]> + )//);
 	} elsif ($toParse ~~ /^^ \@	\" [ . <-[\"]> | <-[\\]> . ] + \"/
 		  or $toParse ~~ /^^ \% [<[\  \# \. \@ \& \< \[ ]>]/
-		  or $toParse ~~ /^^ \% [<-[\  \% \# \. \@ \& \< \[]>+]/) {
-		#TODO: go back to parseOthers(Str)
+		  or $toParse ~~ /^^ \% [<-[\  \% \# \. \@ \& \< \[ ]>+]/) {
 		assign $toEdit;
-		parseOthers($toParse);
-	} elsif $toParse ~~ /^^ ' {' (.*?) $$/ {
-		#TODO: embeds the block.
+		parseOthers $toParse;
+	} elsif $toParse ~~ /^^ ' {' (.*?)/ {
 		assign $toEdit;
-		parseOthers($current ~~ s/^^ ' {'//, $0) unless $0 eqv "";
-	} elsif $toParse ~~ /^^ ' ' (.*?) $$/ {
+		parseOthers($toParse ~~ s/^^ ' {'//, $0) unless $0 eqv "";
+	} elsif $toParse ~~ /^^ ' ' (.*?)/ {
 		$current.put(TextTag.new(text => $0.Str)) unless $0 eqv "";
 	}
 }
@@ -133,7 +137,6 @@ sub finWrite() {
 	say '===>>> Trying to finWrite()';
 	my Tag $asdf = $current;
 	while ($asdf.hasSuper) {
-		say $asdf.startHTML;
 		$asdf .= super;
 	}
 	say $doctype.startHTML if $hasDoctype;
