@@ -1,5 +1,7 @@
 #HBML
 
+**This is currently just a design, the parser is only partially working**
+
 The language for HTML kings.
 
 It is based off of [*HAML*](http://haml.info/). It does not have support for Ruby integration, as it is supposed to be an independent language that compiles into basic HTML.
