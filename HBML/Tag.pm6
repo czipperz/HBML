@@ -2,21 +2,22 @@ use HBML::Property;
 
 class Tag {
 
-has @.properties = ();
+has Property @.properties = ();
 has Str $.name;
 has Bool $.hasSuper = True;
 has Tag $.super;
-has @.subs = ();
-has Block $.b = {()};
-has Block $.a = {()};
+has Tag @.subs = ();
+has Block $.b;
+has Block $.a;
 has Bool $.hasB = False;
 has Bool $.hasA = False;
+has Bool $.encapsulated = False;
 
-method startHTML() returns Str {
+method startHTML(--> Str) {
 	return "<$.name>" if @.properties.elems == 0;
 	"<$.name {@.properties[].Str}>";
 }
-method endHTML() returns Str {
+method endHTML(--> Str) {
 	"</$.name>";
 }
 
