@@ -67,8 +67,8 @@ sub parseBlock(Str $blockName, Bool $encapsulated --> Tag) {
 }
 
 multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
-	#say "PARSEOTHERS: $val";
-	if ($val ~~ /^^ (.*)/ and $0 eqv "") {
+	#say "PARS: $val";
+	if ($val eqv "") {
 
 	#ESCAPED TEXT
 	} elsif $val ~~ /^^ ' '? '\\- ' (.*)/ {
@@ -79,7 +79,6 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated);
 		parseOthers($1.Str);
 	} elsif $val ~~ /^^ \% (<[\  \% \# \. \@ \& \< \[ ]> .*)/ {
-		#say "Adding blank div";
 		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated);
 		parseOthers($0.Str);
 	} elsif $val ~~ /^^ \% (<-[\  \% \# \. \@ \& \< \[ ]> +) (.*)/ {
@@ -95,20 +94,29 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 
 	#END OF BLOCK
 	} elsif $val ~~ /^^ '}'/ {
-		#say "EOB: " ~ $current.endHTML();
+		#say "EOB1: " ~ $current.endHTML();
 		while $current.encapsulated {
 			$current .= super;
 		}
+		#say "EOB2: " ~ $current.endHTML();
+		$current .= super if $current.hasSuper;
+	} elsif $val ~~ /^^ ' ' (.*)/ {
+		$current.put(TextTag.new(text => $0.Str));
+		#say "BBB1: " ~ $current.endHTML();
+		while $current.encapsulated {
+			$current .= super;
+		}
+		#say "BBB2: " ~ $current.endHTML();
 		$current .= super;
 	} else {
-		$current.put(TextTag.new(text => $val));
+		$current.put(TextTag.new(text => $val.Str));
+		#say "CURR: " ~ $current.endHTML();
 	}
 }
 
 #Recursively finds properties in the `Str $toParse` and adds them to `$toEdit`.
 multi parseOthers(Tag $toEdit, Str $toParse) {
 	if ($toParse eqv "") {
-		#say "EMPTY";
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
 	} elsif $toParse ~~ /^^ \((.*)\) (.*)/ {
@@ -131,9 +139,13 @@ multi parseOthers(Tag $toEdit, Str $toParse) {
 	} elsif $toParse ~~ /^^ ' {' (.*)/ {
 		parseOthers($0.Str) unless $0.Str eqv "";
 	} elsif $toParse ~~ /^^ ' ' (.*)/ {
-		$current.put(TextTag.new(text => $0.Str)) unless $0 eqv "";
+		$current.put(TextTag.new(text => $0.Str)) unless $0.Str eqv "";
+		#say "AAA1: " ~ $current.endHTML();
+		while $current.encapsulated {
+			$current .= super;
+		}
+		#say "AAA2: " ~ $current.endHTML();
 		$current .= super;
-		#say $current.endHTML;
 	}
 }
 
