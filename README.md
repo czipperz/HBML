@@ -1,10 +1,8 @@
 #HBML
 
-**This is currently just a design, the parser is only partially working**
+This stands for HBML Bracketed Markup Language. It allows for you to concisely and easily create websites by making many things optional.
 
-The language for HTML kings.
-
-It is based off of [*HAML*](http://haml.info/). It does not have support for Ruby integration, as it is supposed to be an independent language that compiles into basic HTML.
+This language is based off of [*HAML*](http://haml.info/). It does not have support for Ruby integration, as it is supposed to be an independent language that compiles into basic HTML.
 
 The HBML tags must be at the *beginning* of each line. HTML can be anywhere but it must be closed with a corresponding *HTML* tag. You can still embed HBML inside HTML and vice-versa.
 
@@ -107,6 +105,8 @@ Every element inside the unordered list is a list element and has a class of "me
 		%li@"index.html".menu-link Home
 		%li@"contact.html".menu-link Contact
 	}
+
+**THE BELOW FEATURES ARE NOT YET IMPLEMENTED**
 
 Now we can see that the only varying part is the link href. So lets put the `%li` and `.menu-link` into the `%ul` description instead of each sub element.
 To put HBML code before each sub element, use `<HBML-code-before>`, and then use square brackets to put things after it (`[HBML-code-after]`).
