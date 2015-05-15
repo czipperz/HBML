@@ -100,6 +100,9 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		}
 		#say "EOB2: " ~ $current.endHTML();
 		$current .= super if $current.hasSuper;
+		if $current.name eqv "head" {
+			assign Tag.new(name => "body", super => $current);
+		}
 	} elsif $val ~~ /^^ ' ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 		#say "BBB1: " ~ $current.endHTML();
