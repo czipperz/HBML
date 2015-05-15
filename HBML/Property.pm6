@@ -4,12 +4,13 @@ has Str $.name;
 has Str $.value;
 
 multi BUILD(Str :$parse is copy) {
-	unless $parse ~~ /  ( <-[\ ]> + ) \=
+	if $parse ~~ /  ( <-[\ ]> + ) \=
 						( \" [ . <-[\"]> | <-[\\]> . ] + \" |
 						<-[\ ]> + ) / {
+		BUILD(name => $0, value => $1);
+	} else {
 		die 'Does not match the pattern to build from';
 	}
-	BUILD(name => $0, value => $1);
 }
 
 multi BUILD(Str :$!name, Str :$!value) {}

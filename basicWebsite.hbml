@@ -9,12 +9,8 @@
 		}
 
 		#menu%ul {
-			%li@"index.html" {
-				Home
-			}
-			%li@"contact.html" {
-				Contact
-			}
+			%li@"index.html" Home
+			%li@"contact.html" Contact
 		}
 
 		#text-body {
