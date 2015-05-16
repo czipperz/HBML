@@ -1,7 +1,7 @@
 class Property {
 
 has Str $.name;
-has Str $.value;
+has Str $.value is rw;
 
 multi BUILD(Str :$parse is copy) {
 	if $parse ~~ /  ( <-[\ ]> + ) \=
