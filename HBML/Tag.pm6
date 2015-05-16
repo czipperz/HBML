@@ -3,6 +3,7 @@ use HBML::Property;
 class Tag {
 
 has Property @.properties = ();
+has Property $.classRef;
 has Str $.name;
 has Bool $.hasSuper = True;
 has Tag $.super;
@@ -42,6 +43,17 @@ multi method put(Tag $sub) {
 }
 
 multi method put(Property $prop) {
+	if $prop.name eqv "class" {
+		if $.classRef.WHAT === $.classRef {
+			$!classRef = $prop;
+			@!properties.push($prop);
+		} else {
+			my $val = $prop.value;
+			$val ~~ s/\" (.*) \"/$0/;
+			$.classRef.value ~~ s/\" (.*) \"/\"$0 $val\"/;
+		}
+		return;
+	}
 	@!properties.push($prop);
 }
 
