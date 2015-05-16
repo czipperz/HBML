@@ -159,5 +159,6 @@ sub finWrite() {
 		$asdf .= super;
 	}
 	say $doctype.startHTML if $hasDoctype;
-	$asdf.writeSubs;
+	my Bool $last = False;
+	$asdf.writeSubs($last);
 }
