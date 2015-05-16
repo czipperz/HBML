@@ -12,8 +12,10 @@ method endHTML() returns Str {
 	"";
 }
 
-method writeSubs() {
-	$.text.say;
+method writeSubs(Bool $lastIsText is rw) {
+	print " " if $lastIsText;
+	$lastIsText = True;
+	print $.text;
 }
 
 }
