@@ -6,7 +6,9 @@ use HBML::Tag;
 use HBML::DoctypeTag;
 use HBML::TextTag;
 
-my $fileH = open "basicWebsite.hbml";
+die "Needs a filename to execute" if @*ARGS.elems == 0;
+die "Only wants a filename to execute" if @*ARGS.elems > 1;
+my $fileH = open @*ARGS[0];
 
 my Tag $doctype;
 my Bool $hasDoctype = False;
@@ -55,7 +57,9 @@ sub assign(Tag $new) {
 }
 
 sub parseDoctype(Str $doctype --> Tag) {
-	DoctypeTag.new(description => $doctype);
+	my $l = DoctypeTag.new(description => $doctype);
+	$l.config();
+	$l
 }
 
 sub parseDiv(Str $name, Str $value, Bool $encapsulated --> Tag) {
@@ -118,7 +122,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 }
 
 #Recursively finds properties in the `Str $toParse` and adds them to `$toEdit`.
-multi parseOthers(Tag $toEdit, Str $toParse) {
+multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 	if ($toParse eqv "") {
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
@@ -130,11 +134,10 @@ multi parseOthers(Tag $toEdit, Str $toParse) {
 			$toEdit.put(Property.new(name => $0, value => $1));
 		}
 		parseOthers($toEdit, $1);
-	} elsif $toParse ~~ /^^ (<[.#]>)	( \" [ . <-[\"]> | <-[\\]> . ] + \" |
-										<-[\  \% \# \. \@ \& \< \[ ]> + )/ {
-		$toEdit.put(Property.new(name => ($0.Str eqv '#' ?? "id" !! "class"), value => $1.Str));
-		parseOthers($toEdit, $toParse ~~ s/^^ (<[.#]>)	( \" [ . <-[\"]> | <-[\\]> . ] + \" |
-														<-[\  \% \# \. \@ \& \< \[ ]> + )//);
+	} elsif $toParse ~~ /^^ (<[.#]>)	[ \" ( . <-[\"]> | <-[\\]> . ) + \" |
+										(<-[\  \% \# \. \@ \& \< \[ ]> + )] (.*)/ {
+		$toEdit.put(Property.new(name => ($0.Str eqv '#' ?? "id" !! "class"), value => '"' ~ $1.Str ~ '"'));
+		parseOthers($toEdit, $2.Str);
 	} elsif ($toParse ~~ /^^ \@	\" [ . <-[\"]> | <-[\\]> . ] + \"/
 		  or $toParse ~~ /^^ \% [<[\  \# \. \@ \& \< \[ ]>]/
 		  or $toParse ~~ /^^ \% [<-[\  \% \# \. \@ \& \< \[ ]>+]/) {
@@ -158,7 +161,7 @@ sub finWrite() {
 	while ($asdf.hasSuper) {
 		$asdf .= super;
 	}
-	say $doctype.startHTML if $hasDoctype;
+	print $doctype.startHTML if $hasDoctype;
 	my Bool $last = False;
 	$asdf.writeSubs($last);
 }
