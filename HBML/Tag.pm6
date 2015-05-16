@@ -22,33 +22,38 @@ method endHTML(--> Str) {
 }
 
 multi method put(Tag $sub) {
+	#`<
 	if $.hasB {
 		my @list = $.b();
 		for @list {
 			@!subs.push($_);
 		}
 	}
+	>
 	@!subs.push($sub);
+	#`<
 	if $.hasA {
 		my @list = $.a();
 		for @list {
 			$sub.put($_);
 		}
 	}
+	>
 }
 
 multi method put(Property $prop) {
 	@!properties.push($prop);
 }
 
-method writeSubs() {
-	say self.startHTML;
+method writeSubs(Bool $lastIsText is rw) {
+	$lastIsText = False;
+	print self.startHTML;
 	if @.subs.elems > 0 {
 		for @.subs {
-			.writeSubs();
+			.writeSubs($lastIsText);
 		}
 	}
-	say self.endHTML;
+	print self.endHTML;
 }
 
 method setBefore(Block $b) {
