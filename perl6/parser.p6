@@ -38,7 +38,6 @@ for $fileH.lines {
 		$doctype = parseDoctype($0.Str);
 		$hasDoctype = True;
 		$current = Tag.new(name => "html", hasSuper => False);
-	} elsif $val eqv "" {
 	} else {
 		parseOthers($val);
 	}
