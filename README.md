@@ -81,8 +81,9 @@ If you don't use a bracket after a tag, it will put the rest of the line in the 
 
 ###Advanced
 
-You can use `@"linkRef"` to automatically make `%a(href="linkRef")`. These both do the same thing:
+You can use `@"linkRef"` to automatically make `%a(href="linkRef")`. These do the same thing:
 
+	<a href="index.html">Home</a>
 	%a(href="index.html") Home
 	@"index.html" Home
 
@@ -129,13 +130,15 @@ We can also embed external HBML (or HTML) files by using the `&` keyword. Exampl
 	}
 
 	<!--index.html-->
-	<ul>
-		<li>
-			<a href="index.html" class="menu-link">Home</a>
-		</li>
-		<li>
-			<a href="contact.html" class="menu-link">Contact</a>
-		</li>
-	</ul>
+	<div id="header">
+		<ul>
+			<li>
+				<a href="index.html" class="menu-link">Home</a>
+			</li>
+			<li>
+				<a href="contact.html" class="menu-link">Contact</a>
+			</li>
+		</ul>
+	</div>
 
 This allows for you to specify a menu one place, then just reference it everywhere.
