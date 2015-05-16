@@ -21,17 +21,14 @@ for $fileH.lines {
 	my Str $ne;
 	my Bool $rep = False;
 	my $val = $_;
-	#$val ~~ s/^^ \s* (.*) \s* $$/$0/;
 	$val ~~ s/^^ \s*//;
 	$val ~~ s/\s* $$//;
-	#say $val;
 	$working = False;
 
 	if $inCom {
 		if $val ~~ /^^ '###' {$comStr}/ {
 			$inCom = False;
 		} else {
-			#.say;
 			$current.put(TextTag.new(text => $_));
 		}
 	} elsif $val ~~ /^^ '###' (\w)?/ {
@@ -42,7 +39,6 @@ for $fileH.lines {
 		$hasDoctype = True;
 		$current = Tag.new(name => "html", hasSuper => False);
 	} elsif $val eqv "" {
-		#say "EMPTY";
 	} else {
 		parseOthers($val);
 	}
@@ -53,7 +49,6 @@ finWrite();
 sub assign(Tag $new) {
 	$current.put($new);
 	$current = $new;
-	#say "ASSIGN: " ~ $current.startHTML;
 }
 
 sub parseDoctype(Str $doctype --> Tag) {
@@ -71,7 +66,6 @@ sub parseBlock(Str $blockName, Bool $encapsulated --> Tag) {
 }
 
 multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
-	#say "PARS: $val";
 	if ($val eqv "") {
 
 	#ESCAPED TEXT
@@ -98,26 +92,21 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 
 	#END OF BLOCK
 	} elsif $val ~~ /^^ '}'/ {
-		#say "EOB1: " ~ $current.endHTML();
 		while $current.encapsulated {
 			$current .= super;
 		}
-		#say "EOB2: " ~ $current.endHTML();
 		$current .= super if $current.hasSuper;
 		if $current.name eqv "head" {
 			assign Tag.new(name => "body", super => $current);
 		}
 	} elsif $val ~~ /^^ ' ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
-		#say "BBB1: " ~ $current.endHTML();
 		while $current.encapsulated {
 			$current .= super;
 		}
-		#say "BBB2: " ~ $current.endHTML();
 		$current .= super;
 	} else {
 		$current.put(TextTag.new(text => $val.Str));
-		#say "CURR: " ~ $current.endHTML();
 	}
 }
 
@@ -145,18 +134,14 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 	} elsif $toParse ~~ /^^ ' {' (.*)/ {
 		parseOthers($0.Str) unless $0.Str eqv "";
 	} elsif $toParse ~~ /^^ ' ' (.*)/ {
-		$current.put(TextTag.new(text => $0.Str)) unless $0.Str eqv "";
-		#say "AAA1: " ~ $current.endHTML();
 		while $current.encapsulated {
 			$current .= super;
 		}
-		#say "AAA2: " ~ $current.endHTML();
 		$current .= super;
 	}
 }
 
 sub finWrite() {
-	#say '===>>> Trying to finWrite()';
 	my Tag $asdf = $current;
 	while ($asdf.hasSuper) {
 		$asdf .= super;
