@@ -22,7 +22,7 @@ for $fileH.lines {
 	my Bool $rep = False;
 	my $val = $_;
 	$val ~~ s/^^ \s*//;
-	$val ~~ s/\s* $$//;
+	#$val ~~ s/\s* $$//;
 	$working = False;
 
 	if $inCom {
@@ -91,7 +91,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		parseOthers($current, $2.Str);
 
 	#END OF BLOCK
-	} elsif $val ~~ /^^ '}'/ {
+	} elsif $val ~~ /^^ \} (.*)/ {
 		while $current.encapsulated {
 			$current .= super;
 		}
@@ -99,7 +99,8 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		if $current.name eqv "head" {
 			assign Tag.new(name => "body", super => $current);
 		}
-	} elsif $val ~~ /^^ ' ' (.*)/ {
+		parseOthers $0.Str;
+	} elsif $val ~~ /^^ ' '+ (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 		while $current.encapsulated {
 			$current .= super;
@@ -117,6 +118,8 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 			$current .= super;
 		}
 		$current .= super;
+	} elsif $val ~~ /^^ ' '+ '\\- ' (.*)/ {
+		$current.put(TextTag.new(text => $0.Str));
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
 	} elsif $toParse ~~ /^^ \((.*)\) (.*)/ {
@@ -131,11 +134,13 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 										(<-[\  \% \# \. \@ \& \< \[ ]> + )] (.*)/ {
 		$toEdit.put(Property.new(name => ($0.Str eqv '#' ?? "id" !! "class"), value => '"' ~ $1.Str ~ '"'));
 		parseOthers($toEdit, $2.Str);
+	#loop back
 	} elsif ($toParse ~~ /^^ \@	\" [ . <-[\"]> | <-[\\]> . ] + \"/
 		  or $toParse ~~ /^^ \% [<[\  \# \. \@ \& \< \[ ]>]/
 		  or $toParse ~~ /^^ \% [<-[\  \% \# \. \@ \& \< \[ ]>+]/) {
 		parseOthers $toParse, True;
-	} elsif $toParse ~~ /^^ ' {' (.*)/ {
+	#Start of block
+	} elsif $toParse ~~ /^^ ' {' ' '* (.*)/ {
 		parseOthers($0.Str) unless $0.Str eqv "";
 	} elsif $toParse ~~ /^^ ' ' (.*)/ {
 		$toEdit.put(TextTag.new(text => $0.Str));
