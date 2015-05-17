@@ -72,19 +72,20 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		$current.put(TextTag.new(text => $0.Str));
 
 	#BLOCKS
-	} elsif $val ~~ /^^ \@ (\" [ . <-[\"]> | <-[\\]> .] + \" ) (.*)/ {
+	} elsif $val ~~ /^^ \@ (\" .*? \") (.*)/ {
 		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated);
-		parseOthers($1.Str);
-	} elsif $val ~~ /^^ \% (<[\  \% \# \. \@ \& \< \[ ]> .*)/ {
+		parseOthers($current, $1.Str);
+	} elsif $val ~~ /^^ \% (<[\  \( \% \# \. \@ \& \< \[ ]> .*)/ {
 		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated);
-		parseOthers($0.Str);
-	} elsif $val ~~ /^^ \% (<-[\  \% \# \. \@ \& \< \[ ]> +) (.*)/ {
+		parseOthers($0.Str) if $0.Str ~~ /<[\ \% \# \. \@ \& \< \[ ]>/;
+		parseOthers($current, $0.Str) if $0.Str ~~ /\(/;
+	} elsif $val ~~ /^^ \% (<-[\  \( \% \# \. \@ \& \< \[ ]> +) (.*)/ {
 		assign parseBlock($0.Str, $encapsulated);
 		parseOthers($current, $1.Str);
 
 	#DIVS
 	} elsif $val ~~ /^^ (<[#.]>) [ (<-[\  \% \# \. \@ \& \< \[ ]> +)    |
-									 \" ([ . <-[\"]> | <-[\\]> . ] +) \"
+									 \" .*? \"
 								 ] (.*)/ {
 		assign parseDiv($0.Str eqv '#' ?? "id" !! "class", $1.Str, $encapsulated);
 		parseOthers($current, $2.Str);
@@ -112,16 +113,20 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 #Recursively finds properties in the `Str $toParse` and adds them to `$toEdit`.
 multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 	if ($toParse eqv "") {
+		while $current.encapsulated {
+			$current .= super;
+		}
+		$current .= super;
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
 	} elsif $toParse ~~ /^^ \((.*)\) (.*)/ {
-		my $var = $0;
-		while $var ~~ s/^^	( <-[\ ]> + ) \=
-							( \" [ . <-[\"]> | <-[\\]> . ] + \"   |
-							<-[\ ]> + )// {
-			$toEdit.put(Property.new(name => $0, value => $1));
+		my $var = $0.Str;
+		while $var ~~ s/^^	\s* ( <-[\ ]> + ) \=
+							( \" .*? \"   |
+							<-[\ ]> + ) \s*// {
+			$toEdit.put(Property.new(name => $0.Str, value => $1.Str));
 		}
-		parseOthers($toEdit, $1);
+		parseOthers($toEdit, $1.Str);
 	} elsif $toParse ~~ /^^ (<[.#]>)	[ \" ( . <-[\"]> | <-[\\]> . ) + \" |
 										(<-[\  \% \# \. \@ \& \< \[ ]> + )] (.*)/ {
 		$toEdit.put(Property.new(name => ($0.Str eqv '#' ?? "id" !! "class"), value => '"' ~ $1.Str ~ '"'));
@@ -133,6 +138,7 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 	} elsif $toParse ~~ /^^ ' {' (.*)/ {
 		parseOthers($0.Str) unless $0.Str eqv "";
 	} elsif $toParse ~~ /^^ ' ' (.*)/ {
+		$toEdit.put(TextTag.new(text => $0.Str));
 		while $current.encapsulated {
 			$current .= super;
 		}
