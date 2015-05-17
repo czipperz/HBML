@@ -1,7 +1,9 @@
 #!/bin/bash
-cat HBML/Property.pm6 > allInOne
+echo '#!/bin/perl6' > allInOne
+cat HBML/Property.pm6 >> allInOne
 cat HBML/Tag.pm6 >> allInOne
 cat HBML/DoctypeTag.pm6 >> allInOne
 cat HBML/TextTag.pm6 >> allInOne
 cat parser.p6 >> allInOne
 vim allInOne
+sudo cp allInOne /bin/hbml
