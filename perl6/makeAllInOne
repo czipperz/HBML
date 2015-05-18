@@ -6,4 +6,7 @@ cat HBML/DoctypeTag.pm6 >> allInOne
 cat HBML/TextTag.pm6 >> allInOne
 cat parser.p6 >> allInOne
 vim allInOne
-sudo cp allInOne /bin/hbml
+# ASSUMES THEY ARE LINKED IF NOT EXISTS
+if [ ! -f /bin/hbml ]; then
+	sudo ln allInOne /bin/hbml
+fi
