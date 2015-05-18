@@ -118,7 +118,7 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 			$current .= super;
 		}
 		$current .= super;
-	} elsif $val ~~ /^^ ' '+ '\\- ' (.*)/ {
+	} elsif $toParse ~~ /^^ ' '+ '\\- ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
