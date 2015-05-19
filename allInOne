@@ -141,50 +141,6 @@ method writeSubs(Bool $lastIsText is rw) {
 }
 
 }
-#!/bin/perl6
-use v6;
-use strict;
-use lib '.';
-
-die "Needs a filename to execute" if @*ARGS.elems == 0;
-die "Only wants a filename to execute" if @*ARGS.elems > 1;
-my $fileH = open @*ARGS[0];
-
-my Tag $doctype;
-my Bool $hasDoctype = False;
-my Tag $current;
-my Bool $working;
-my Bool $inCom = False;
-my Str $comStr = "";
-
-for $fileH.lines {
-	my Str $ne;
-	my Bool $rep = False;
-	my $val = $_;
-	$val ~~ s/^^ \s*//;
-	#$val ~~ s/\s* $$//;
-	$working = False;
-
-	if $inCom {
-		if $val ~~ /^^ '###' {$comStr}/ {
-			$inCom = False;
-		} else {
-			$current.put(TextTag.new(text => $_));
-		}
-	} elsif $val ~~ /^^ '###' (\w)?/ {
-		$inCom = True;
-		$comStr = $0;
-	} elsif $val ~~ /^^ '!!' (.*)/ {
-		$doctype = parseDoctype($0.Str);
-		$hasDoctype = True;
-		$current = Tag.new(name => "html", hasSuper => False);
-	} else {
-		parseOthers($val);
-	}
-}
-
-finWrite();
-
 sub assign(Tag $new) {
 	$current.put($new);
 	$current = $new;
@@ -202,6 +158,32 @@ sub parseDiv(Str $name, Str $value, Bool $encapsulated --> Tag) {
 
 sub parseBlock(Str $blockName, Bool $encapsulated --> Tag) {
 	Tag.new(name => $blockName,	super => $current, encapsulated => $encapsulated);
+}
+
+my Tag $doctype;
+my Bool $hasDoctype = False;
+my Tag $current;
+my Bool $inCom = False;
+my Str $comStr = "";
+
+multi parseStr(Str $val is copy) {
+	$val ~~ s/^^ ' '*//;
+	if $inCom {
+		if $val ~~ /^^ '###' {$comStr}/ {
+			$inCom = False;
+		} else {
+			$current.put(TextTag.new(text => $_));
+		}
+	} elsif $val ~~ /^^ '###' (\s)?/ {
+		$inCom = True;
+		$comStr = $0;
+	} elsif $val ~~ /^^ '!!' (.*)/ {
+		$doctype = parseDoctype $0.Str;
+		$hasDoctype = True;
+		$current = Tag.new(name => "html", hasSuper => False);
+	} else {
+		parseOthers $val;
+	}
 }
 
 multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
@@ -300,3 +282,18 @@ sub finWrite() {
 	my Bool $last = False;
 	$asdf.writeSubs($last);
 }
+#!/bin/perl6
+use v6;
+use strict;
+use lib '.';
+
+die "Needs a filename to execute" if @*ARGS.elems == 0;
+die "Only wants a filename to execute" if @*ARGS.elems > 1;
+my $fileH = open @*ARGS[0];
+
+
+for $fileH.lines {
+	parseOthers($_);
+}
+
+finWrite();

@@ -6,7 +6,7 @@ use HBML::TextTag;
 
 my Tag $doctype;
 my Bool $hasDoctype = False;
-my Bool $working;
+my Tag $current;
 my Bool $inCom = False;
 my Str $comStr = "";
 
@@ -18,7 +18,7 @@ multi parseStr(Str $val is copy) {
 		} else {
 			$current.put(TextTag.new(text => $_));
 		}
-	} elsif $val ~~ /^^ '###' (\s)?/ {
+	} elsif $val ~~ /^^ '###' (\w)?/ {
 		$inCom = True;
 		$comStr = $0;
 	} elsif $val ~~ /^^ '!!' (.*)/ {
