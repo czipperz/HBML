@@ -4,6 +4,8 @@ cat HBML/Property.pm6 >> allInOne
 cat HBML/Tag.pm6 >> allInOne
 cat HBML/DoctypeTag.pm6 >> allInOne
 cat HBML/TextTag.pm6 >> allInOne
+cat HBML/ParseMethods.pm6 >> allInOne
+cat HBML/DefaultLexer.pm6 >> allInOne
 cat parser.p6 >> allInOne
 vim allInOne
 # ASSUMES THEY ARE LINKED IF NOT EXISTS
