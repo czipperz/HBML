@@ -141,7 +141,7 @@ method writeSubs(Bool $lastIsText is rw) {
 }
 
 }
-sub assign(Tag $new) {
+sub assign(Tag $new, Tag $current is rw) {
 	$current.put($new);
 	$current = $new;
 }
@@ -152,11 +152,11 @@ sub parseDoctype(Str $doctype --> Tag) {
 	$l
 }
 
-sub parseDiv(Str $name, Str $value, Bool $encapsulated --> Tag) {
+sub parseDiv(Str $name, Str $value, Bool $encapsulated, Tag $current --> Tag) {
 	Tag.new(name => "div", properties => (Property.new(name => $name, value => "\"$value\"")), super => $current, encapsulated => $encapsulated);
 }
 
-sub parseBlock(Str $blockName, Bool $encapsulated --> Tag) {
+sub parseBlock(Str $blockName, Bool $encapsulated, Tag $current --> Tag) {
 	Tag.new(name => $blockName,	super => $current, encapsulated => $encapsulated);
 }
 
@@ -174,7 +174,7 @@ multi parseStr(Str $val is copy) {
 		} else {
 			$current.put(TextTag.new(text => $_));
 		}
-	} elsif $val ~~ /^^ '###' (\s)?/ {
+	} elsif $val ~~ /^^ '###' (\w)?/ {
 		$inCom = True;
 		$comStr = $0;
 	} elsif $val ~~ /^^ '!!' (.*)/ {
@@ -195,21 +195,21 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 
 	#BLOCKS
 	} elsif $val ~~ /^^ \@ (\" .*? \") (.*)/ {
-		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated);
+		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated), $current;
 		parseOthers($current, $1.Str);
 	} elsif $val ~~ /^^ \% (<[\  \( \% \# \. \@ \& \< \[ ]> .*)/ {
-		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated);
+		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated), $current;
 		parseOthers($0.Str) if $0.Str ~~ /<[\ \% \# \. \@ \& \< \[ ]>/;
 		parseOthers($current, $0.Str) if $0.Str ~~ /\(/;
 	} elsif $val ~~ /^^ \% (<-[\  \( \% \# \. \@ \& \< \[ ]> +) (.*)/ {
-		assign parseBlock($0.Str, $encapsulated);
+		assign parseBlock($0.Str, $encapsulated, $current), $current;
 		parseOthers($current, $1.Str);
 
 	#DIVS
 	} elsif $val ~~ /^^ (<[#.]>) [ (<-[\  \% \# \. \@ \& \< \[ ]> +)    |
 									 \" .*? \"
 								 ] (.*)/ {
-		assign parseDiv($0.Str eqv '#' ?? "id" !! "class", $1.Str, $encapsulated);
+		assign parseDiv($0.Str eqv '#' ?? "id" !! "class", $1.Str, $encapsulated, $current), $current;
 		parseOthers($current, $2.Str);
 
 	#END OF BLOCK
@@ -219,7 +219,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		}
 		$current .= super if $current.hasSuper;
 		if $current.name eqv "head" {
-			assign Tag.new(name => "body", super => $current);
+			assign Tag.new(name => "body", super => $current), $current;
 		}
 		parseOthers $0.Str;
 	} elsif $val ~~ /^^ ' '+ (.*)/ {
@@ -290,7 +290,6 @@ use lib '.';
 die "Needs a filename to execute" if @*ARGS.elems == 0;
 die "Only wants a filename to execute" if @*ARGS.elems > 1;
 my $fileH = open @*ARGS[0];
-
 
 for $fileH.lines {
 	parseOthers($_);
