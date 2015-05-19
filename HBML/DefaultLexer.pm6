@@ -39,21 +39,21 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 
 	#BLOCKS
 	} elsif $val ~~ /^^ \@ (\" .*? \") (.*)/ {
-		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated);
+		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated), $current;
 		parseOthers($current, $1.Str);
 	} elsif $val ~~ /^^ \% (<[\  \( \% \# \. \@ \& \< \[ ]> .*)/ {
-		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated);
+		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated), $current;
 		parseOthers($0.Str) if $0.Str ~~ /<[\ \% \# \. \@ \& \< \[ ]>/;
 		parseOthers($current, $0.Str) if $0.Str ~~ /\(/;
 	} elsif $val ~~ /^^ \% (<-[\  \( \% \# \. \@ \& \< \[ ]> +) (.*)/ {
-		assign parseBlock($0.Str, $encapsulated);
+		assign parseBlock($0.Str, $encapsulated, $current), $current;
 		parseOthers($current, $1.Str);
 
 	#DIVS
 	} elsif $val ~~ /^^ (<[#.]>) [ (<-[\  \% \# \. \@ \& \< \[ ]> +)    |
 									 \" .*? \"
 								 ] (.*)/ {
-		assign parseDiv($0.Str eqv '#' ?? "id" !! "class", $1.Str, $encapsulated);
+		assign parseDiv($0.Str eqv '#' ?? "id" !! "class", $1.Str, $encapsulated, $current), $current;
 		parseOthers($current, $2.Str);
 
 	#END OF BLOCK
@@ -63,7 +63,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		}
 		$current .= super if $current.hasSuper;
 		if $current.name eqv "head" {
-			assign Tag.new(name => "body", super => $current);
+			assign Tag.new(name => "body", super => $current), $current;
 		}
 		parseOthers $0.Str;
 	} elsif $val ~~ /^^ ' '+ (.*)/ {
