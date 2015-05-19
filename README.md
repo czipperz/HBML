@@ -20,21 +20,11 @@ Here is the basic draft.
 		</head>
 		<body>
 			<div id="content">
-				<div id="header">
-					<h1>Basic Website Header</h1>
-				</div>
+				<div id="header"><h1>Basic Website Header</h1></div>
 				<div id="menu">
 					<ul>
-						<li>
-							<a href="index.html">
-								Home
-							</a>
-						</li>
-						<li>
-							<a href="contact.html">
-								Contact
-							</a>
-						</li>
+						<li><a href="index.html">Home</a></li>
+						<li><a href="contact.html">Contact</a></li>
 					</ul>
 				</div>
 			</div>
