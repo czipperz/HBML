@@ -1,3 +1,9 @@
+use HBML::ParseMethods;
+use HBML::Tag;
+use HBML::DoctypeTag;
+use HBML::Property;
+use HBML::TextTag;
+
 my Tag $doctype;
 my Bool $hasDoctype = False;
 my Bool $working;
