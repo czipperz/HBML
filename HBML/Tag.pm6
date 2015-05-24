@@ -23,23 +23,19 @@ method endHTML(--> Str) {
 }
 
 multi method put(Tag $sub) {
-	#`<
-	if $.hasB {
-		my @list = $.b();
-		for @list {
-			@!subs.push($_);
-		}
-	}
-	>
+	#if $.hasB {
+	#	my @list = $.b();
+	#	for @list {
+	#		@!subs.push($_);
+	#	}
+	#}
 	@!subs.push($sub);
-	#`<
-	if $.hasA {
-		my @list = $.a();
-		for @list {
-			$sub.put($_);
-		}
-	}
-	>
+	#if $.hasA {
+	#	my @list = $.a();
+	#	for @list {
+	#		$sub.put($_);
+	#	}
+	#}
 }
 
 multi method put(Property $prop) {

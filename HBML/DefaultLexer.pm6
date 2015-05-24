@@ -1,8 +1,6 @@
-use HBML::ParseMethods;
 use HBML::Tag;
-use HBML::DoctypeTag;
-use HBML::Property;
 use HBML::TextTag;
+use HBML::ParseMethods;
 
 my Tag $doctype;
 my Bool $hasDoctype = False;
@@ -10,7 +8,7 @@ my Tag $current;
 my Bool $inCom = False;
 my Str $comStr = "";
 
-multi parseStr(Str $val is copy) {
+multi parseStr(Str $val is copy) is export {
 	$val ~~ s/^^ ' '*//;
 	if $inCom {
 		if $val ~~ /^^ '###' {$comStr}/ {
@@ -20,7 +18,7 @@ multi parseStr(Str $val is copy) {
 		}
 	} elsif $val ~~ /^^ '###' (\w)?/ {
 		$inCom = True;
-		$comStr = $0;
+		$comStr = $0.Str;
 	} elsif $val ~~ /^^ '!!' (.*)/ {
 		$doctype = parseDoctype $0.Str;
 		$hasDoctype = True;
@@ -117,7 +115,7 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 	}
 }
 
-sub finWrite() {
+sub finWrite() is export {
 	my Tag $asdf = $current;
 	while ($asdf.hasSuper) {
 		$asdf .= super;

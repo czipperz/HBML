@@ -159,7 +159,6 @@ sub parseDiv(Str $name, Str $value, Bool $encapsulated, Tag $current --> Tag) {
 sub parseBlock(Str $blockName, Bool $encapsulated, Tag $current --> Tag) {
 	Tag.new(name => $blockName,	super => $current, encapsulated => $encapsulated);
 }
-
 my Tag $doctype;
 my Bool $hasDoctype = False;
 my Tag $current;
@@ -229,6 +228,9 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		}
 		$current .= super;
 	} else {
+		if $current.WHAT eq $current {
+			say "fuk";
+		}
 		$current.put(TextTag.new(text => $val.Str));
 	}
 }
@@ -282,7 +284,6 @@ sub finWrite() {
 	my Bool $last = False;
 	$asdf.writeSubs($last);
 }
-#!/bin/perl6
 use v6;
 use strict;
 use lib '.';
@@ -292,6 +293,7 @@ die "Only wants a filename to execute" if @*ARGS.elems > 1;
 my $fileH = open @*ARGS[0];
 
 for $fileH.lines {
+	.say;
 	parseOthers($_);
 }
 
