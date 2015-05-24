@@ -1,7 +1,5 @@
 #HBML
 
-**CURRENTLY BROKEN!!!!!!!!!!!!!!!**
-
 This stands for HTML Bracketed Markup Language. It allows for you to concisely and easily create websites by making many things optional.
 
 This language is based off of [*HAML*](http://haml.info/). It does not have support for Ruby integration, as it is supposed to be an independent language that compiles into basic HTML.
