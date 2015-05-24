@@ -45,23 +45,19 @@ method endHTML(--> Str) {
 }
 
 multi method put(Tag $sub) {
-	#`<
-	if $.hasB {
-		my @list = $.b();
-		for @list {
-			@!subs.push($_);
-		}
-	}
-	>
+	#if $.hasB {
+	#	my @list = $.b();
+	#	for @list {
+	#		@!subs.push($_);
+	#	}
+	#}
 	@!subs.push($sub);
-	#`<
-	if $.hasA {
-		my @list = $.a();
-		for @list {
-			$sub.put($_);
-		}
-	}
-	>
+	#if $.hasA {
+	#	my @list = $.a();
+	#	for @list {
+	#		$sub.put($_);
+	#	}
+	#}
 }
 
 multi method put(Property $prop) {
@@ -141,31 +137,33 @@ method writeSubs(Bool $lastIsText is rw) {
 }
 
 }
-sub assign(Tag $new, Tag $current is rw) {
+
+sub assign(Tag $new, Tag $current is rw) is export {
 	$current.put($new);
 	$current = $new;
 }
 
-sub parseDoctype(Str $doctype --> Tag) {
+sub parseDoctype(Str $doctype --> Tag) is export {
 	my $l = DoctypeTag.new(description => $doctype);
 	$l.config();
 	$l
 }
 
-sub parseDiv(Str $name, Str $value, Bool $encapsulated, Tag $current --> Tag) {
+sub parseDiv(Str $name, Str $value, Bool $encapsulated, Tag $current --> Tag) is export {
 	Tag.new(name => "div", properties => (Property.new(name => $name, value => "\"$value\"")), super => $current, encapsulated => $encapsulated);
 }
 
-sub parseBlock(Str $blockName, Bool $encapsulated, Tag $current --> Tag) {
+sub parseBlock(Str $blockName, Bool $encapsulated, Tag $current --> Tag) is export {
 	Tag.new(name => $blockName,	super => $current, encapsulated => $encapsulated);
 }
+
 my Tag $doctype;
 my Bool $hasDoctype = False;
 my Tag $current;
 my Bool $inCom = False;
 my Str $comStr = "";
 
-multi parseStr(Str $val is copy) {
+multi parseStr(Str $val is copy) is export {
 	$val ~~ s/^^ ' '*//;
 	if $inCom {
 		if $val ~~ /^^ '###' {$comStr}/ {
@@ -175,7 +173,7 @@ multi parseStr(Str $val is copy) {
 		}
 	} elsif $val ~~ /^^ '###' (\w)?/ {
 		$inCom = True;
-		$comStr = $0;
+		$comStr = $0.Str;
 	} elsif $val ~~ /^^ '!!' (.*)/ {
 		$doctype = parseDoctype $0.Str;
 		$hasDoctype = True;
@@ -228,9 +226,6 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 		}
 		$current .= super;
 	} else {
-		if $current.WHAT eq $current {
-			say "fuk";
-		}
 		$current.put(TextTag.new(text => $val.Str));
 	}
 }
@@ -275,7 +270,7 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 	}
 }
 
-sub finWrite() {
+sub finWrite() is export {
 	my Tag $asdf = $current;
 	while ($asdf.hasSuper) {
 		$asdf .= super;
@@ -284,8 +279,8 @@ sub finWrite() {
 	my Bool $last = False;
 	$asdf.writeSubs($last);
 }
+#!/bin/perl6
 use v6;
-use strict;
 use lib '.';
 
 die "Needs a filename to execute" if @*ARGS.elems == 0;
@@ -293,8 +288,7 @@ die "Only wants a filename to execute" if @*ARGS.elems > 1;
 my $fileH = open @*ARGS[0];
 
 for $fileH.lines {
-	.say;
-	parseOthers($_);
+	parseStr($_);
 }
 
 finWrite();
