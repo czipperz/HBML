@@ -9,7 +9,7 @@ my Bool $inCom = False;
 my Str $comStr = "";
 
 multi parseStr(Str $val is copy) is export {
-	$val ~~ s/^^ ' '*//;
+	$val ~~ s/^^ \s*//;
 	if $inCom {
 		if $val ~~ /^^ '###' {$comStr}/ {
 			$inCom = False;
