@@ -1,0 +1,19 @@
+!!html
+%head {
+	%title Basic Website
+}
+#content {
+	#header {
+		#title Basic Website Header
+
+		#menu%ul<%li>[.a-class] {
+			@"index.html" Home
+			@"contact.html" Contact
+		}
+	}
+
+	#text-body {
+		Hi, I'm Czipperz and I am designing a basic website! Tweet at me using the hashtag
+		\- #maddox.
+	}
+}
