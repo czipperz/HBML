@@ -77,7 +77,7 @@ You can use `@"linkRef"` to automatically make `%a(href="linkRef")`. These do th
 	%a(href="index.html") Home
 	@"index.html" Home
 
-======================
+----------------------
 
 Many times in HTML you make a list and each sub-element will have the same style. Here's a similar example as the basic website above:
 
