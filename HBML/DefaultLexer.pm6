@@ -32,7 +32,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 	if ($val eqv "") {
 
 	#ESCAPED TEXT
-	} elsif $val ~~ /^^ ' '? '\\- ' (.*)/ {
+	} elsif $val ~~ /^^ \s? '\\- ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 
 	#BLOCKS
@@ -64,7 +64,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 			assign Tag.new(name => "body", super => $current), $current;
 		}
 		parseOthers $0.Str;
-	} elsif $val ~~ /^^ ' '+ (.*)/ {
+	} elsif $val ~~ /^^ \s+ (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 		while $current.encapsulated {
 			$current .= super;
@@ -82,7 +82,7 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 			$current .= super;
 		}
 		$current .= super;
-	} elsif $toParse ~~ /^^ ' '+ '\\- ' (.*)/ {
+	} elsif $toParse ~~ /^^ \s+ '\\- ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
@@ -104,9 +104,9 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 		  or $toParse ~~ /^^ \% [<-[\  \% \# \. \@ \& \< \[ ]>+]/) {
 		parseOthers $toParse, True;
 	#Start of block
-	} elsif $toParse ~~ /^^ ' {' ' '* (.*)/ {
+	} elsif $toParse ~~ /^^ ' {' \s* (.*)/ {
 		parseOthers($0.Str) unless $0.Str eqv "";
-	} elsif $toParse ~~ /^^ ' ' (.*)/ {
+	} elsif $toParse ~~ /^^ \s (.*)/ {
 		$toEdit.put(TextTag.new(text => $0.Str));
 		while $current.encapsulated {
 			$current .= super;
