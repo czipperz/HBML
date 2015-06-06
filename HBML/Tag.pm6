@@ -23,19 +23,9 @@ method endHTML(--> Str) {
 }
 
 multi method put(Tag $sub) {
-	#if $.hasB {
-	#	my @list = $.b();
-	#	for @list {
-	#		@!subs.push($_);
-	#	}
-	#}
+	$b(self) if $.b.WHAT != $.b;
 	@!subs.push($sub);
-	#if $.hasA {
-	#	my @list = $.a();
-	#	for @list {
-	#		$sub.put($_);
-	#	}
-	#}
+	$a(self) if $.a.WHAT != $.a;
 }
 
 multi method put(Property $prop) {
@@ -64,13 +54,18 @@ method writeSubs(Bool $lastIsText is rw) {
 	print self.endHTML;
 }
 
+method addBefore(Block $b) {
+	$!b = -> Tag $tag { $!b($tag); $b($tag) };
+}
 method setBefore(Block $b) {
 	$!b = $b;
-	$!hasB = True;
+}
+
+method addAfter(Block $a) {
+	$!a = -> Tag $tag { $!a($tag); $a($tag) };
 }
 method setAfter(Block $a) {
 	$!a = $a;
-	$!hasA = True;
 }
 
 }
