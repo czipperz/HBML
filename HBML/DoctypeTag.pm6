@@ -4,11 +4,12 @@ class DoctypeTag is Tag {
 
 has Str $.description;
 
-method config() {
-	my $l := $!description;
-	$l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"' if $l eqv "strict";
-	$l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd"' if $l eqv "frame";
-	$l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"' if $l eqv "trans";
+sub BUILD(:$!description) {
+	given $!description {
+		when "strict" { $l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"' }
+		when "frame" | "frameset" { $l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd"' }
+		when "trans" | "transitional" { $l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"' }
+	}
 }
 
 method startHTML() returns Str {
