@@ -37,7 +37,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 
 	#BLOCKS
 	} elsif $val ~~ /^^ \@ (\" .*? \") (.*)/ {
-		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated), $current;
+		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str),), super => $current, encapsulated => $encapsulated), $current;
 		parseOthers($current, $1.Str);
 	} elsif $val ~~ /^^ \% (<[\  \( \% \# \. \@ \& \< \[ ]> .*)/ {
 		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated), $current;
