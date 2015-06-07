@@ -23,9 +23,9 @@ method endHTML(--> Str) {
 }
 
 multi method put(Tag $sub) {
-	$b(self) if $.b.WHAT != $.b;
+	$!b(self) if $!b.defined;
 	@!subs.push($sub);
-	$a(self) if $.a.WHAT != $.a;
+	$!a(self) if $!a.defined;
 }
 
 multi method put(Property $prop) {
