@@ -8,7 +8,7 @@ sub assign(Tag $new, Tag $current is rw) is export {
 
 sub parseDoctype(Str $doctype --> Tag) is export {
 	my $l = DoctypeTag.new(description => $doctype);
-	$l.config();
+	#$l.config();
 	$l
 }
 
