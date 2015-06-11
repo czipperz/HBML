@@ -45,19 +45,9 @@ method endHTML(--> Str) {
 }
 
 multi method put(Tag $sub) {
-	#if $.hasB {
-	#	my @list = $.b();
-	#	for @list {
-	#		@!subs.push($_);
-	#	}
-	#}
+	$!b(self) if $!b.defined;
 	@!subs.push($sub);
-	#if $.hasA {
-	#	my @list = $.a();
-	#	for @list {
-	#		$sub.put($_);
-	#	}
-	#}
+	$!a(self) if $!a.defined;
 }
 
 multi method put(Property $prop) {
@@ -86,13 +76,18 @@ method writeSubs(Bool $lastIsText is rw) {
 	print self.endHTML;
 }
 
+method addBefore(Block $b) {
+	$!b = -> Tag $tag { $!b($tag); $b($tag) };
+}
 method setBefore(Block $b) {
 	$!b = $b;
-	$!hasB = True;
+}
+
+method addAfter(Block $a) {
+	$!a = -> Tag $tag { $!a($tag); $a($tag) };
 }
 method setAfter(Block $a) {
 	$!a = $a;
-	$!hasA = True;
 }
 
 }
@@ -101,12 +96,17 @@ class DoctypeTag is Tag {
 
 has Str $.description;
 
-method config() {
-	my $l := $!description;
-	$l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"' if $l eqv "strict";
-	$l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd"' if $l eqv "frame";
-	$l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"' if $l eqv "trans";
+multi BUILD(:$description) {
+	my $l = $description;
+	given $l {
+		when "strict" { $l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"' }
+		when "frame" | "frameset" { $l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd"' }
+		when "trans" | "transitional" { $l = 'HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"' }
+	}
+	BUILD($description);
 }
+
+multi BUILD($!description) {}
 
 method startHTML() returns Str {
 	"<!DOCTYPE $.description>";
@@ -145,7 +145,7 @@ sub assign(Tag $new, Tag $current is rw) is export {
 
 sub parseDoctype(Str $doctype --> Tag) is export {
 	my $l = DoctypeTag.new(description => $doctype);
-	$l.config();
+	#$l.config();
 	$l
 }
 
@@ -187,12 +187,12 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 	if ($val eqv "") {
 
 	#ESCAPED TEXT
-	} elsif $val ~~ /^^ ' '? '\\- ' (.*)/ {
+	} elsif $val ~~ /^^ \s? '\\- ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 
 	#BLOCKS
 	} elsif $val ~~ /^^ \@ (\" .*? \") (.*)/ {
-		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str)), super => $current, encapsulated => $encapsulated), $current;
+		assign Tag.new(name => "a", properties => (Property.new(name => "href", value => $0.Str),), super => $current, encapsulated => $encapsulated), $current;
 		parseOthers($current, $1.Str);
 	} elsif $val ~~ /^^ \% (<[\  \( \% \# \. \@ \& \< \[ ]> .*)/ {
 		assign Tag.new(name => "div", super => $current, encapsulated => $encapsulated), $current;
@@ -219,7 +219,7 @@ multi parseOthers(Str $val is copy, Bool $encapsulated = False) {
 			assign Tag.new(name => "body", super => $current), $current;
 		}
 		parseOthers $0.Str;
-	} elsif $val ~~ /^^ ' '+ (.*)/ {
+	} elsif $val ~~ /^^ \s+ (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 		while $current.encapsulated {
 			$current .= super;
@@ -237,7 +237,7 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 			$current .= super;
 		}
 		$current .= super;
-	} elsif $toParse ~~ /^^ ' '+ '\\- ' (.*)/ {
+	} elsif $toParse ~~ /^^ \s+ '\\- ' (.*)/ {
 		$current.put(TextTag.new(text => $0.Str));
 	} elsif $toParse ~~ /^^ \(\) (.*)/ {
 		parseOthers($toEdit, $0);
@@ -259,9 +259,9 @@ multi parseOthers(Tag $toEdit, Str $toParse is copy) {
 		  or $toParse ~~ /^^ \% [<-[\  \% \# \. \@ \& \< \[ ]>+]/) {
 		parseOthers $toParse, True;
 	#Start of block
-	} elsif $toParse ~~ /^^ ' {' ' '* (.*)/ {
+	} elsif $toParse ~~ /^^ ' {' \s* (.*)/ {
 		parseOthers($0.Str) unless $0.Str eqv "";
-	} elsif $toParse ~~ /^^ ' ' (.*)/ {
+	} elsif $toParse ~~ /^^ \s (.*)/ {
 		$toEdit.put(TextTag.new(text => $0.Str));
 		while $current.encapsulated {
 			$current .= super;
@@ -279,9 +279,7 @@ sub finWrite() is export {
 	my Bool $last = False;
 	$asdf.writeSubs($last);
 }
-#!/bin/perl6
 use v6;
-use lib '.';
 
 die "Needs a filename to execute" if @*ARGS.elems == 0;
 die "Only wants a filename to execute" if @*ARGS.elems > 1;
